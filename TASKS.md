@@ -8,13 +8,13 @@
                Vitest config. No tailwind.config.ts needed.
 
 ## Stage 2 — Data layer (Data Layer Agent)
-- [ ] BE-01: src/utils/hashUrl.ts — pure function, stable id from url
-- [ ] BE-02: src/utils/relativeTime.ts — pure function, "2 hours ago" format
-- [ ] BE-03: src/adapters/NewsAdapter.ts
+- [x] BE-01: src/utils/hashUrl.ts — pure function, stable id from url
+- [x] BE-02: src/utils/relativeTime.ts — pure function, "2 hours ago" format
+- [x] BE-03: src/adapters/NewsAdapter.ts
              fetchArticles(topic: Topic): Promise<Article[]>
              URL: newsapi.org/v2/everything?q={query}&pageSize=5&apiKey={key}
              Handle: 429 rate limit, network error, empty results
-- [ ] BE-04: src/adapters/GeminiAdapter.ts
+- [x] BE-04: src/adapters/GeminiAdapter.ts
              summarise(articles: Article[], topicLabels: string[]): Promise<DigestSummary>
              Strip ```json fences before parsing
              Validate response shape before returning
