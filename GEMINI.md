@@ -7,7 +7,8 @@ personalised daily briefing. Single-page, no backend, no database.
 
 ## Tech stack
 - React 18 + TypeScript + Vite
-- Tailwind CSS (styling)
+- Tailwind CSS v4 (@tailwindcss/vite plugin — no tailwind.config.ts needed,
+  no @tailwind directives, CSS uses @import "tailwindcss" only)
 - Zustand (state)
 - @google/generative-ai (Gemini SDK, browser-compatible)
 - NewsAPI (free tier — 100 req/day, localhost works in dev)
@@ -90,6 +91,7 @@ Articles: {JSON}"
 - No fetch() in components — adapters and hooks only
 - All dates via Intl.DateTimeFormat or relativeTime util
 - Tailwind only — no inline styles
+- No tailwind.config.ts — Tailwind v4 does not use one
 - Every component colocated with its .test.tsx
 - API keys from import.meta.env (VITE_NEWS_API_KEY, VITE_GEMINI_API_KEY)
 - JSDoc on every exported function

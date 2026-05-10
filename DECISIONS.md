@@ -29,3 +29,9 @@ Reason: Less boilerplate, easier to read on a presentation screen
 Decision: Demo runs on localhost only, not deployed
 Reason: NewsAPI free tier allows localhost browser requests but blocks
 deployed domains without a CORS proxy
+
+## ADR-007: Tailwind CSS v4 via @tailwindcss/vite
+Decision: Use Tailwind v4 with the Vite plugin instead of v3
+Reason: npx tailwindcss init -p fails in v4 — no config file needed.
+The plugin is added to vite.config.ts and CSS uses @import "tailwindcss".
+No tailwind.config.ts, no postcss.config.js, no @tailwind directives.

@@ -7,7 +7,8 @@ Output checklist:
   - All domain types exported from src/domain/index.ts
   - JSDoc on every interface and type
   - .env.example with both API key names
-  - vite.config.ts, tailwind.config.ts, tsconfig.json in place
+  - vite.config.ts and tsconfig.json in place
+  - Note: no tailwind.config.ts — project uses Tailwind v4
 
 ## Frontend Agent
 Owns: src/components/, src/hooks/, src/store/
@@ -16,6 +17,7 @@ Never touches: src/adapters/
 Rules:
   - No fetch() in components — hooks only
   - No inline styles — Tailwind classes only
+  - No tailwind.config.ts theme extensions — Tailwind v4 uses CSS variables
   - Every component has a colocated .test.tsx
   - Loading and error states required for every data-dependent component
 
