@@ -50,8 +50,8 @@
 - [x] QA-06: Write QA section in BUILD_DIARY.md
 
 ## Stage 6 — Demo polish (Frontend Agent)
-- [ ] DEMO-01: Verify Technology + AI active on first load
-- [ ] DEMO-02: Stagger animation on ArticleCard entrance (75ms delay per card)
-- [ ] DEMO-03: Verify NewsAPI CORS on localhost in browser Network tab
-- [ ] DEMO-04: End-to-end test with real keys — generate real digest,
+- [x] DEMO-01: Verify Technology + AI active on first load
+- [x] DEMO-02: Stagger animation on ArticleCard entrance (75ms delay per card)
+- [x] DEMO-03: Verify NewsAPI CORS on localhost in browser Network tab
+- [x] DEMO-04: End-to-end test with real keys — generate real digest,
                refresh page, confirm sessionStorage restores it

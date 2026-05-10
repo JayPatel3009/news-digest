@@ -21,7 +21,7 @@ export function useDigest() {
         const parsed = JSON.parse(cached) as Digest;
         // Basic validation that it's a Digest
         if (parsed.id && parsed.items) {
-          setDigest(parsed);
+          setDigest({ ...parsed, isFromCache: true });
           setStatus('ready');
         }
       } catch (e: unknown) {

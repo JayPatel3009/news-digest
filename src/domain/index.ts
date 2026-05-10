@@ -97,6 +97,11 @@ export interface Digest {
    */
   items: DigestItem[];
   /**
+   * Whether this digest was restored from cache (sessionStorage).
+   * Used to suppress entrance animations for old content.
+   */
+  isFromCache?: boolean;
+  /**
    * Current lifecycle status of the digest generation.
    */
   status: 'idle' | 'fetching' | 'summarising' | 'ready' | 'error';

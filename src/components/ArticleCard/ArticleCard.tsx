@@ -5,21 +5,26 @@ import { ScoreBar } from '../ScoreBar/ScoreBar';
 interface ArticleCardProps {
   item: DigestItem;
   index: number;
+  isFromCache?: boolean;
 }
 
 /**
  * Renders an individual article within the digest with AI analysis.
  */
-export function ArticleCard({ item, index }: ArticleCardProps) {
+export function ArticleCard({ item, index, isFromCache }: ArticleCardProps) {
   const { article, relevanceScore, aiReason } = item;
   
   // Staggered entrance animation delay
   const delay = Math.min(index * 75, 450);
 
+  const animationClasses = isFromCache 
+    ? '' 
+    : 'animate-in fade-in slide-in-from-bottom-2 duration-500 fill-mode-both';
+
   return (
     <div 
-      className="p-5 bg-white border border-gray-100 rounded-xl shadow-sm mb-4 transition-all hover:shadow-md hover:border-violet-200 animate-in fade-in slide-in-from-bottom-2 duration-500 fill-mode-both"
-      style={{ animationDelay: `${delay}ms` }}
+      className={`p-5 bg-white border border-gray-100 rounded-xl shadow-sm mb-4 transition-all hover:shadow-md hover:border-violet-200 ${animationClasses}`}
+      style={{ animationDelay: isFromCache ? '0ms' : `${delay}ms` }}
     >
       <div className="space-y-3">
         <a 

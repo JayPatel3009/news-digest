@@ -68,7 +68,12 @@ function App() {
               />
               <div className="space-y-4">
                 {digest.items.map((item, index) => (
-                  <ArticleCard key={item.article.id} item={item} index={index} />
+                  <ArticleCard 
+                    key={item.article.id} 
+                    item={item} 
+                    index={index} 
+                    isFromCache={digest.isFromCache}
+                  />
                 ))}
               </div>
             </div>
