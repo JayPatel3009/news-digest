@@ -32,13 +32,13 @@
              Persists result to sessionStorage under key 'last_digest'
 
 ## Stage 4 — UI components (Frontend Agent)
-- [ ] FE-04: ScoreBar — animated width on mount, amber ≤6, green ≥7
-- [ ] FE-05: StatusBanner + test — message per Digest status
-- [ ] FE-06: TopicSelector + test — chips, active styling, disabled last
-- [ ] FE-07: ExecutiveSummary + test — amber blockquote, skeleton state
-- [ ] FE-08: ArticleCard + test — link title, source, time, reason, ScoreBar
-- [ ] FE-09: DigestHeader + test — date, topic pills, Refresh button
-- [ ] FE-10: App.tsx + ErrorBoundary — layout, empty state, wires all together
+- [x] FE-04: ScoreBar — animated width on mount, amber ≤6, green ≥7
+- [x] FE-05: StatusBanner + test — message per Digest status
+- [x] FE-06: TopicSelector + test — chips, active styling, disabled last
+- [x] FE-07: ExecutiveSummary + test — amber blockquote, skeleton state
+- [x] FE-08: ArticleCard + test — link title, source, time, reason, ScoreBar
+- [x] FE-09: DigestHeader + test — date, topic pills, Refresh button
+- [x] FE-10: App.tsx + ErrorBoundary — layout, empty state, wires all together
 
 ## Stage 5 — QA pass (QA Agent)
 - [ ] QA-01: grep -r ": any" src/ — fix every hit

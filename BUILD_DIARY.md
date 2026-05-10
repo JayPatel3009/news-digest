@@ -31,13 +31,61 @@ Be honest — the failures are the best presentation material.
            in 5 minutes. Fastest stage by far.
 
 ### Stage 2 — Data layer
-- [timestamp] —
+- 10:12 — Pasted the Data Layer Agent prompt. Agent read domain types
+           first, then started on hashUrl.ts. Used a simple btoa() hash
+           approach — not cryptographically strong but stable and
+           sufficient for generating article IDs.
+- 10:18 — NewsAdapter came back cleanly. Mapping from NewsAPI response
+           fields to Article domain type was correct. RateLimitError and
+           NoResultsError both typed properly as custom error classes.
+- 10:24 — GeminiAdapter was the tricky one. First version did not strip
+           the ```json fences from Gemini responses. I had read about
+           this issue so I caught it immediately. Told the agent to add
+           the strip logic — fixed in one follow-up prompt.
+- 10:31 — relativeTime.ts came back with a minor bug: it was returning
+           "1 hours ago" instead of "1 hour ago" for singular values.
+           Flagged it, agent fixed it in under a minute.
+- 10:33 — Both .test.ts files generated with full coverage. Committed.
+           Total stage time: 21 minutes. One real bug caught and fixed.
 
 ### Stage 3 — State and hooks
-- [timestamp] —
+- 10:38 — Zustand store created correctly. Default topics initialised
+           with Technology and AI active. All six topics present.
+- 10:42 — useTopics came back with the toggle guard but it was using
+           filter().length instead of a direct count check. Technically
+           correct but less readable. Left it — not worth a re-prompt
+           for a style preference.
+- 10:48 — useDigest was the most complex hook. Agent got the Promise.all
+           parallel fetch right on first try. Deduplication logic was
+           also correct — filtering by URL keeping first occurrence.
+- 10:51 — sessionStorage restore on mount was missing a try/catch. If
+           the stored JSON was malformed it would crash the app on load.
+           Flagged it. Agent added the try/catch immediately.
+- 10:54 — Committed. Stage 3 done. No major issues, one safety fix.
 
 ### Stage 4 — UI components
-- [timestamp] —
+- 11:02 — Largest stage. Pasted the full UI prompt. Agent started with
+           ScoreBar — animated width transition worked correctly.
+- 11:09 — TopicSelector chips looked right but the "last active" guard
+           was not disabling the button visually — only the click was
+           blocked. The opacity-50 and cursor-not-allowed classes were
+           missing from the conditional. Fixed with one follow-up.
+- 11:18 — ExecutiveSummary skeleton looked great. Amber blockquote style
+           matched the spec exactly. No changes needed.
+- 11:26 — ArticleCard entrance animation had the stagger logic but the
+           delay was being applied as a hardcoded string instead of a
+           computed inline style. Tailwind cannot handle dynamic delay
+           values at runtime. Agent switched to style={{ animationDelay }}
+           which is the correct approach for dynamic values in Tailwind v4.
+- 11:35 — DigestHeader date formatter was using 'en-US' locale instead
+           of 'en-NZ' as specified. Small detail but it matters for the
+           presentation audience. Fixed in one line.
+- 11:44 — App.tsx wired everything together correctly. ErrorBoundary
+           class component generated without issues.
+- 11:47 — Ran npm run dev. App loaded. Empty state showed correctly.
+           Generate button visible. Committed. Stage 4 done in 45 minutes.
+           This was the longest stage but also the most satisfying —
+           seeing the UI appear for the first time.
 
 ### Stage 5 — QA pass
 - [timestamp] —
