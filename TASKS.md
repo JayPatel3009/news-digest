@@ -20,13 +20,13 @@
              Validate response shape before returning
 
 ## Stage 3 — State and hooks (Frontend Agent)
-- [ ] FE-01: src/store/digestStore.ts — Zustand slice
+- [x] FE-01: src/store/digestStore.ts — Zustand slice
              State: topics, digest, status, error
              Actions: setTopics, setDigest, setStatus, setError, reset
              Init: Technology and AI active by default
-- [ ] FE-02: src/hooks/useTopics.ts
+- [x] FE-02: src/hooks/useTopics.ts
              toggleTopic(id) — guard against deselecting last active topic
-- [ ] FE-03: src/hooks/useDigest.ts
+- [x] FE-03: src/hooks/useDigest.ts
              Flow: NewsAdapter → dedupe by url → GeminiAdapter
              Exposes: { digest, status, error, generate, reset }
              Persists result to sessionStorage under key 'last_digest'
