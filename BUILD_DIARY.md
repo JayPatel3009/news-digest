@@ -1,6 +1,6 @@
 # Build Diary — AI News Digest
 
-Date: [fill in today's date before you start]
+Date: 10 May 2026
 Goal: Build a production-quality React app in one session using only
 Gemini CLI agents, then present the experience and the working app.
 
@@ -16,7 +16,19 @@ Be honest — the failures are the best presentation material.
 ## Session log
 
 ### Stage 1 — Foundation
-- [timestamp] —
+- 10:02 — Started Gemini CLI from project root. Pasted the Architect
+           Agent prompt. Agent immediately read GEMINI.md before doing
+           anything — exactly as instructed. Good sign.
+- 10:04 — Agent produced src/domain/index.ts with all four interfaces:
+           Topic, Article, DigestItem, Digest. JSDoc on every field.
+           Matched the domain model in GEMINI.md exactly. Zero changes
+           needed from me.
+- 10:05 — Agent tried to create a new tailwind.config.ts even though the
+           prompt explicitly said not to. Caught it before it overwrote
+           anything. Added "do not create tailwind.config.ts" reminder
+           to the agent prompt for future sessions. This is Tailwind v4.
+- 10:07 — Verified .env.example had both keys. Committed. Stage 1 done
+           in 5 minutes. Fastest stage by far.
 
 ### Stage 2 — Data layer
 - [timestamp] —

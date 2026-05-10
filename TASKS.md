@@ -1,10 +1,10 @@
 # Build Session — AI News Digest
 
 ## Stage 1 — Foundation (Architect Agent)
-- [ ] ARCH-01: src/domain/index.ts — Topic, Article, DigestItem, Digest
+- [x] ARCH-01: src/domain/index.ts — Topic, Article, DigestItem, Digest
                with JSDoc on every interface and field
-- [ ] ARCH-02: .env.example — VITE_NEWS_API_KEY, VITE_GEMINI_API_KEY
-- [ ] ARCH-03: Verify vite.config.ts has @tailwindcss/vite plugin and
+- [x] ARCH-02: .env.example — VITE_NEWS_API_KEY, VITE_GEMINI_API_KEY
+- [x] ARCH-03: Verify vite.config.ts has @tailwindcss/vite plugin and
                Vitest config. No tailwind.config.ts needed.
 
 ## Stage 2 — Data layer (Data Layer Agent)
