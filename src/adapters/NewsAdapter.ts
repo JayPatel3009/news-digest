@@ -1,4 +1,4 @@
-import { Article, Topic } from '../domain';
+import type { Article, Topic } from '../domain';
 import { hashUrl } from '../utils/hashUrl';
 
 /**

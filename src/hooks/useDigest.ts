@@ -2,7 +2,7 @@ import { useEffect, useCallback } from 'react';
 import { useDigestStore } from '../store/digestStore';
 import { fetchArticles, RateLimitError, NoResultsError } from '../adapters/NewsAdapter';
 import { summarise, GeminiParseError } from '../adapters/GeminiAdapter';
-import { Article, Digest, DigestItem } from '../domain';
+import type { Article, Digest, DigestItem } from '../domain';
 
 const SESSION_KEY = 'last_digest';
 
@@ -87,6 +87,7 @@ export function useDigest() {
         executiveSummary: summary.executiveSummary,
         items: digestItems.sort((a, b) => b.relevanceScore - a.relevanceScore),
         status: 'ready',
+        isFromCache: false,
       };
 
       setDigest(newDigest);

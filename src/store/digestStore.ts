@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Digest, Topic } from '../domain';
+import type { Digest, Topic } from '../domain/index';
 
 interface DigestState {
   topics: Topic[];

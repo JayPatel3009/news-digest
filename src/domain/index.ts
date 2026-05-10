@@ -1,108 +1,75 @@
 /**
- * Represents a news topic that a user can follow.
+ * Represents a news topic the user can subscribe to.
  */
 export interface Topic {
-  /**
-   * Unique identifier for the topic.
-   */
+  /** Unique identifier for the topic */
   id: string;
-  /**
-   * Display name of the topic.
-   */
+  /** Human-readable label shown in the UI */
   label: string;
-  /**
-   * Search query used to fetch articles from NewsAPI.
-   */
+  /** Search query string sent to NewsAPI */
   query: string;
-  /**
-   * Whether the topic is currently selected for the digest.
-   */
+  /** Whether this topic is currently selected by the user */
   isActive: boolean;
 }
 
 /**
- * Represents a news article fetched from NewsAPI and normalized.
+ * A single news article fetched from NewsAPI.
  */
 export interface Article {
-  /**
-   * Stable hash of the article URL used as a unique identifier.
-   */
+  /** Stable hash generated from the article URL */
   id: string;
-  /**
-   * Headline of the article.
-   */
+  /** Headline of the article */
   title: string;
-  /**
-   * Brief summary or excerpt of the article content.
-   */
+  /** Short description or null if not provided */
   description: string | null;
-  /**
-   * Original canonical URL of the article.
-   */
+  /** Full URL to the original article */
   url: string;
-  /**
-   * Name of the publishing source (e.g., "BBC News", "TechCrunch").
-   */
+  /** Name of the news source */
   sourceName: string;
-  /**
-   * ISO 8601 timestamp of when the article was published.
-   */
+  /** ISO 8601 publish date string */
   publishedAt: string;
-  /**
-   * The ID of the Topic this article belongs to.
-   */
+  /** ID of the topic this article was fetched for */
   topicId: string;
 }
 
 /**
- * An article enriched with AI-generated analysis.
+ * A single article inside a digest, enriched with AI scoring.
  */
 export interface DigestItem {
-  /**
-   * The original article data.
-   */
+  /** The article this item refers to */
   article: Article;
-  /**
-   * AI-assigned relevance score ranging from 1 to 10.
-   */
+  /** Relevance score from 1 to 10 assigned by Gemini */
   relevanceScore: number;
-  /**
-   * One-sentence explanation from the AI about why this article is relevant.
-   */
+  /** One sentence from Gemini explaining why this article matters */
   aiReason: string;
 }
 
 /**
- * The core state of a news digest generation.
+ * The status of a digest through its lifecycle.
+ */
+export type DigestStatus =
+  | 'idle'
+  | 'fetching'
+  | 'summarising'
+  | 'ready'
+  | 'error';
+
+/**
+ * A complete personalised news digest.
  */
 export interface Digest {
-  /**
-   * Unique identifier for this specific digest instance.
-   */
+  /** Unique identifier generated at creation time */
   id: string;
-  /**
-   * ISO 8601 timestamp of when the digest was created.
-   */
+  /** ISO 8601 string of when this digest was created */
   createdAt: string;
-  /**
-   * List of topic IDs included in this digest.
-   */
+  /** IDs of the topics included in this digest */
   topicIds: string[];
-  /**
-   * AI-generated high-level summary of all articles in the digest.
-   */
+  /** Three-sentence executive summary written by Gemini */
   executiveSummary: string;
-  /**
-   * Ranked and analyzed articles included in the digest.
-   */
+  /** Ranked list of articles with AI scoring */
   items: DigestItem[];
-  /**
-   * Whether this digest was restored from cache (sessionStorage).
-   * Used to suppress entrance animations for old content.
-   */
-  isFromCache?: boolean;
-  /**
-   * Current lifecycle status of the digest generation.
-   */
-  status: 'idle' | 'fetching' | 'summarising' | 'ready' | 'error';
+  /** Current lifecycle status of the digest */
+  status: DigestStatus;
+  /** Whether this digest was restored from sessionStorage cache */
+  isFromCache: boolean;
 }

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { fetchArticles, RateLimitError, NoResultsError } from './NewsAdapter';
-import { Topic } from '../domain';
+import type { Topic } from '../domain';
 
 describe('NewsAdapter', () => {
   const mockTopic: Topic = {

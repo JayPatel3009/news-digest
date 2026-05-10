@@ -96,6 +96,8 @@ Articles: {JSON}"
 - API keys from import.meta.env (VITE_NEWS_API_KEY, VITE_GEMINI_API_KEY)
 - JSDoc on every exported function
 - Errors are typed — never throw raw strings
+- Always use `import type` for type-only imports — verbatimModuleSyntax is enabled in tsconfig.json
+- Always import from '../domain/index' not '../domain' — bare folder imports fail at runtime in this project
 
 ## MVP scope (do not exceed this in one session)
 - 6 default topics: Technology, AI, Climate, Business, Science, Design

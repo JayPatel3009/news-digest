@@ -1,4 +1,4 @@
-import { DigestItem } from '../../domain';
+import type { DigestItem } from '../../domain';
 import { relativeTime } from '../../utils/relativeTime';
 import { ScoreBar } from '../ScoreBar/ScoreBar';
 

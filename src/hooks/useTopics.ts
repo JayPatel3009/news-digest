@@ -1,5 +1,4 @@
 import { useDigestStore } from '../store/digestStore';
-import { Topic } from '../domain';
 
 /**
  * Hook for managing topic selection logic.

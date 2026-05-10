@@ -1,12 +1,13 @@
-import { Article } from '../domain';
+import type { Article } from '../domain';
 
 /**
  * Custom error thrown when Gemini returns a malformed response.
  */
 export class GeminiParseError extends Error {
-  constructor(public rawResponse: string) {
-    super('Failed to parse Gemini response as valid JSON.');
-    this.name = 'GeminiParseError';
+  public rawResponse: string;
+  constructor(rawResponse: string) {
+    super('Failed to parse Gemini response');
+    this.rawResponse = rawResponse;
   }
 }
 

@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { summarise, GeminiParseError } from './GeminiAdapter';
-import { Article } from '../domain';
+import type { Article } from '../domain';
 
 describe('GeminiAdapter', () => {
   const mockArticles: Article[] = [
