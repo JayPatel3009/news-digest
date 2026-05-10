@@ -85,6 +85,12 @@ function App() {
   );
 }
 
+/**
+ * Production entry point for the application.
+ * Wraps the main App in an ErrorBoundary for robust failure handling.
+ * 
+ * @returns The application component tree.
+ */
 export default function AppWithErrorBoundary() {
   return (
     <ErrorBoundary>

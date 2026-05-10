@@ -24,7 +24,7 @@ export function useDigest() {
           setDigest(parsed);
           setStatus('ready');
         }
-      } catch (e) {
+      } catch (e: unknown) {
         console.error('Failed to restore digest from session storage', e);
         sessionStorage.removeItem(SESSION_KEY);
       }

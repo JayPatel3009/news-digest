@@ -24,6 +24,16 @@ export class NoResultsError extends Error {
 const NEWS_API_KEY = import.meta.env.VITE_NEWS_API_KEY;
 const BASE_URL = 'https://newsapi.org/v2/everything';
 
+interface NewsApiArticle {
+  url: string;
+  title: string;
+  description: string | null;
+  source: {
+    name: string;
+  };
+  publishedAt: string;
+}
+
 /**
  * Fetches articles from NewsAPI for a given topic.
  * 
@@ -47,17 +57,17 @@ export async function fetchArticles(topic: Topic): Promise<Article[]> {
   }
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+    const errorData = (await response.json().catch(() => ({ message: 'Unknown error' }))) as { message?: string };
     throw new Error(`NewsAPI error: ${errorData.message || response.statusText}`);
   }
 
-  const data = await response.json();
+  const data = (await response.json()) as { articles: NewsApiArticle[] };
 
   if (!data.articles || data.articles.length === 0) {
     throw new NoResultsError(topic.label);
   }
 
-  return data.articles.map((apiArticle: any): Article => ({
+  return data.articles.map((apiArticle: NewsApiArticle): Article => ({
     id: hashUrl(apiArticle.url),
     title: apiArticle.title,
     description: apiArticle.description || null,

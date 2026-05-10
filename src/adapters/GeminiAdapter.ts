@@ -22,6 +22,16 @@ interface DigestSummary {
   }[];
 }
 
+interface GeminiResponse {
+  candidates?: {
+    content?: {
+      parts?: {
+        text?: string;
+      }[];
+    };
+  }[];
+}
+
 /**
  * Uses Gemini to summarise and rank a list of articles.
  * 
@@ -64,11 +74,11 @@ Articles: ${JSON.stringify(articles)}`;
   });
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+    const errorData = (await response.json().catch(() => ({ message: 'Unknown error' }))) as { message?: string };
     throw new Error(`Gemini API error: ${errorData.message || response.statusText}`);
   }
 
-  const data = await response.json();
+  const data = (await response.json()) as GeminiResponse;
   const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
   if (!rawText) {

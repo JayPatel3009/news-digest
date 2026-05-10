@@ -41,13 +41,13 @@
 - [x] FE-10: App.tsx + ErrorBoundary — layout, empty state, wires all together
 
 ## Stage 5 — QA pass (QA Agent)
-- [ ] QA-01: grep -r ": any" src/ — fix every hit
-- [ ] QA-02: JSDoc audit — add any missing on exported functions
-- [ ] QA-03: NewsAdapter tests — 200, 429, empty array cases
-- [ ] QA-04: GeminiAdapter tests — valid JSON, fenced JSON, malformed JSON
-- [ ] QA-05: Manual checklist — valid topics, last topic guard,
+- [x] QA-01: grep -r ": any" src/ — fix every hit
+- [x] QA-02: JSDoc audit — add any missing on exported functions
+- [x] QA-03: NewsAdapter tests — 200, 429, empty array cases
+- [x] QA-04: GeminiAdapter tests — valid JSON, fenced JSON, malformed JSON
+- [x] QA-05: Manual checklist — valid topics, last topic guard,
              wrong API key, sessionStorage cache
-- [ ] QA-06: Write QA section in BUILD_DIARY.md
+- [x] QA-06: Write QA section in BUILD_DIARY.md
 
 ## Stage 6 — Demo polish (Frontend Agent)
 - [ ] DEMO-01: Verify Technology + AI active on first load
