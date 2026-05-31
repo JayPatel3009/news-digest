@@ -48,7 +48,7 @@ export async function fetchArticles(topic: Topic): Promise<Article[]> {
     throw new Error('VITE_NEWS_API_KEY is not defined');
   }
 
-  const url = `${BASE_URL}?q=${encodeURIComponent(topic.query)}&pageSize=5&sortBy=publishedAt&apiKey=${NEWS_API_KEY}`;
+  const url = `${BASE_URL}?q=${encodeURIComponent(topic.query)}&pageSize=10&sortBy=publishedAt&apiKey=${NEWS_API_KEY}`;
 
   const response = await fetch(url);
 

@@ -39,7 +39,7 @@ export async function summarise(articles: Article[], topicLabels: string[]): Pro
   const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
   const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
 
-  const systemPrompt = "You are a sharp, concise news editor. You rank articles by importance and explain why each one matters to a general reader. Never sensationalise. Always return valid JSON and nothing else.";
+  const systemPrompt = "You are a sharp, concise news editor. You rank articles by importance (relevanceScore from 0 to 100, where 100 is most important) and explain why each one matters to a general reader. Never sensationalise. Always return valid JSON and nothing else.";
   
   const userPrompt = `Given these ${articles.length} articles across topics: ${topicLabels.join(', ')}, 
 return ONLY valid JSON matching exactly this schema:

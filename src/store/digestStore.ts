@@ -15,12 +15,16 @@ interface DigestState {
 }
 
 const DEFAULT_TOPICS: Topic[] = [
-  { id: 'technology', label: 'Technology', query: 'technology', isActive: true },
+  { id: 'tech', label: 'Technology', query: 'technology', isActive: true },
   { id: 'ai', label: 'AI', query: 'artificial intelligence', isActive: true },
-  { id: 'climate', label: 'Climate', query: 'climate change', isActive: false },
-  { id: 'business', label: 'Business', query: 'business economy', isActive: false },
-  { id: 'science', label: 'Science', query: 'science discovery', isActive: false },
-  { id: 'design', label: 'Design', query: 'design technology', isActive: false },
+  { id: 'finance', label: 'Finance', query: 'business finance economy', isActive: false },
+  { id: 'science', label: 'Science', query: 'science discovery research', isActive: false },
+  { id: 'health', label: 'Health', query: 'health medicine wellness', isActive: false },
+  { id: 'space', label: 'Space', query: 'space exploration astronomy', isActive: false },
+  { id: 'environment', label: 'Climate', query: 'climate change environment', isActive: false },
+  { id: 'politics', label: 'Politics', query: 'world politics government', isActive: false },
+  { id: 'culture', label: 'Culture', query: 'arts culture lifestyle', isActive: false },
+  { id: 'design', label: 'Design', query: 'design architecture creativity', isActive: false },
 ];
 
 /**
