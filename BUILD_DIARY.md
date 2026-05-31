@@ -150,6 +150,27 @@ Be honest — the failures are the best presentation material.
            ✓ Page refresh restored digest from sessionStorage instantly
            ✓ Refresh button generated a new digest successfully
 - 12:47 — Final commit. App is presentation-ready.
+- 18:55 — Generation failed with 404 on gemini-1.5-flash model.
+               Model is deprecated. Updated GeminiAdapter to use
+               gemini-2.0-flash. Worked immediately. Always check
+               model availability against current API — model names
+               change faster than documentation.
+- 19:10 — Encountered "Quota Exceeded (limit: 0)" error on gemini-2.0-flash.
+               Even on a brand new session, the experimental 2.0-flash
+               reported zero quota for some regions/keys.
+- 19:25 — Attempted fallback to stable gemini-1.5-flash series.
+               Result: Cascade of 404 errors (404 Not Found).
+               Researched and discovered that as of May 2026, the 1.5
+               series has been officially retired/shut down.
+- 19:40 — Tried various aliases: -latest, -8b, -001. All returned 404.
+               The 1.5 infrastructure is completely gone.
+- 20:05 — Final Solution: Switched to gemini-2.5-flash-lite.
+               This is the current (May 2026) recommended model for
+               high-speed, low-cost "lite" tasks. It worked instantly
+               on the paid tier.
+               Lesson: In AI development, "stable" models from 6 months
+               ago are your "legacy" systems. Always check the latest
+               ai.google.dev model list before debugging 404s.
 
 ---
 

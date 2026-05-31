@@ -81,7 +81,9 @@ export function useDigest() {
 
       // 5. Finalize Digest
       const newDigest: Digest = {
-        id: crypto.randomUUID(),
+        id: typeof crypto.randomUUID === 'function' 
+          ? crypto.randomUUID() 
+          : Math.random().toString(36).substring(2, 11),
         createdAt: new Date().toISOString(),
         topicIds: activeTopics.map((t) => t.id),
         executiveSummary: summary.executiveSummary,

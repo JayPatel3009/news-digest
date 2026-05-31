@@ -10,7 +10,7 @@ personalised daily briefing. Single-page, no backend, no database.
 - Tailwind CSS v4 (@tailwindcss/vite plugin — no tailwind.config.ts needed,
   no @tailwind directives, CSS uses @import "tailwindcss" only)
 - Zustand (state)
-- @google/generative-ai (Gemini SDK, browser-compatible)
+- @google/generative-ai (Gemini SDK, browser-compatible, model: gemini-2.0-flash)
 - NewsAPI (free tier — 100 req/day, localhost works in dev)
 - Vitest + React Testing Library
 

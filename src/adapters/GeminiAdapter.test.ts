@@ -2,6 +2,21 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { summarise, GeminiParseError } from './GeminiAdapter';
 import type { Article } from '../domain';
 
+// Mock the GoogleGenerativeAI SDK correctly for constructor usage
+const _generateContentMock = vi.fn();
+
+vi.mock('@google/generative-ai', () => {
+  return {
+    GoogleGenerativeAI: vi.fn().mockImplementation(function() {
+      return {
+        getGenerativeModel: vi.fn().mockImplementation(() => ({
+          generateContent: _generateContentMock,
+        })),
+      };
+    }),
+  };
+});
+
 describe('GeminiAdapter', () => {
   const mockArticles: Article[] = [
     {
@@ -16,37 +31,27 @@ describe('GeminiAdapter', () => {
   ];
 
   beforeEach(() => {
-    vi.stubGlobal('fetch', vi.fn());
+    vi.clearAllMocks();
+    // Set a dummy API key for testing
+    vi.stubEnv('VITE_GEMINI_API_KEY', 'test-key');
   });
 
   it('returns digest summary on valid JSON response', async () => {
-    const mockResponse = {
-      candidates: [
+    const mockJson = {
+      executiveSummary: 'This is a summary.',
+      items: [
         {
-          content: {
-            parts: [
-              {
-                text: JSON.stringify({
-                  executiveSummary: 'This is a summary.',
-                  items: [
-                    {
-                      articleId: '1',
-                      relevanceScore: 9,
-                      aiReason: 'Important.',
-                    },
-                  ],
-                }),
-              },
-            ],
-          },
+          articleId: '1',
+          relevanceScore: 9,
+          aiReason: 'Important.',
         },
       ],
     };
 
-    (fetch as any).mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: async () => mockResponse,
+    _generateContentMock.mockResolvedValue({
+      response: {
+        text: () => JSON.stringify(mockJson),
+      },
     });
 
     const result = await summarise(mockArticles, ['Technology']);
@@ -57,27 +62,15 @@ describe('GeminiAdapter', () => {
   });
 
   it('handles JSON response wrapped in markdown fences', async () => {
-    const mockResponse = {
-      candidates: [
-        {
-          content: {
-            parts: [
-              {
-                text: '```json\n' + JSON.stringify({
-                  executiveSummary: 'Fenced summary.',
-                  items: [],
-                }) + '\n```',
-              },
-            ],
-          },
-        },
-      ],
+    const mockJson = {
+      executiveSummary: 'Fenced summary.',
+      items: [],
     };
 
-    (fetch as any).mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: async () => mockResponse,
+    _generateContentMock.mockResolvedValue({
+      response: {
+        text: () => '```json\n' + JSON.stringify(mockJson) + '\n```',
+      },
     });
 
     const result = await summarise(mockArticles, ['Technology']);
@@ -85,26 +78,18 @@ describe('GeminiAdapter', () => {
   });
 
   it('throws GeminiParseError on malformed JSON', async () => {
-    const mockResponse = {
-      candidates: [
-        {
-          content: {
-            parts: [
-              {
-                text: 'Invalid JSON',
-              },
-            ],
-          },
-        },
-      ],
-    };
-
-    (fetch as any).mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: async () => mockResponse,
+    _generateContentMock.mockResolvedValue({
+      response: {
+        text: () => 'Invalid JSON',
+      },
     });
 
     await expect(summarise(mockArticles, ['Technology'])).rejects.toThrow(GeminiParseError);
+  });
+
+  it('throws Error on API failure', async () => {
+    _generateContentMock.mockRejectedValue(new Error('Network error'));
+
+    await expect(summarise(mockArticles, ['Technology'])).rejects.toThrow(/Gemini API error/);
   });
 });

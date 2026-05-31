@@ -82,7 +82,7 @@ function App() {
 
         <footer className="mt-20 pt-8 border-t border-gray-100 text-center">
           <p className="text-[10px] text-gray-400 font-medium uppercase tracking-widest">
-            Powered by NewsAPI & Gemini 1.5 Flash
+            Powered by NewsAPI & Gemini 2.0 Flash
           </p>
         </footer>
       </div>
