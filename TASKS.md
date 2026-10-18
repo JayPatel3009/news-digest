@@ -63,3 +63,9 @@
 - [x] SEC-04: vite-api-plugin.ts — isolate API keys behind server middleware
 - [x] SEC-05: Update NewsAdapter and GeminiAdapter to use server endpoints
 - [x] SEC-06: Resolved 8 ESLint errors and eliminated : any usages in adapters
+
+## Stage 8 — Code Quality & Test Coverage (Phase 2)
+- [x] QA-07: Resolved remaining ESLint errors in ErrorBoundary.tsx and ScoreBar.tsx
+- [x] QA-08: Standardized all domain imports to use 'domain/index'
+- [x] QA-09: Added colocated component tests (TopicSelector, ArticleCard, ExecutiveSummary, DigestHeader)
+- [x] QA-10: 100% of 10 test suites (37 tests) passing; zero ': any' in codebase

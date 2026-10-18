@@ -12,18 +12,8 @@ export function ScoreBar({ score }: ScoreBarProps) {
   const [width, setWidth] = useState(0);
   
   // Logic to determine the percentage:
-  let displayPercentage = 0;
-  
-  if (score > 10) {
-    // Already 0-100 scale
-    displayPercentage = score;
-  } else if (score > 1) {
-    // 1-10 scale -> convert to percentage
-    displayPercentage = score * 10;
-  } else {
-    // 0-1 scale -> convert to percentage
-    displayPercentage = score * 100;
-  }
+  const displayPercentage =
+    score > 10 ? score : score > 1 ? score * 10 : score * 100;
   
   // Clamp between 0 and 100
   const finalPercentage = Math.min(Math.max(displayPercentage, 0), 100);

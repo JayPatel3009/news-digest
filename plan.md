@@ -31,27 +31,27 @@ This plan tracks all improvements across **Security**, **Code Quality & Architec
 
 ## Phase 2: Code Quality, Spec Adherence & Test Coverage
 
-- [ ] **2.1 Resolve Remaining ESLint Errors**
-  - [ ] Fix unused `_` parameter in `src/components/ErrorBoundary.tsx` (`getDerivedStateFromError`).
-  - [ ] Fix `no-useless-assignment` in `src/components/ScoreBar/ScoreBar.tsx`.
-  - [ ] Verify `npm run lint` exits with 0 errors and 0 warnings.
+- [x] **2.1 Resolve Remaining ESLint Errors**
+  - [x] Fix unused `_` parameter in `src/components/ErrorBoundary.tsx` (`getDerivedStateFromError`).
+  - [x] Fix `no-useless-assignment` in `src/components/ScoreBar/ScoreBar.tsx`.
+  - [x] Verify `npm run lint` exits with 0 errors and 0 warnings.
 
-- [ ] **2.2 Enforce Domain Import Convention**
-  - [ ] Update all bare folder imports (`'../domain'` or `'../../domain'`) to use `'.../domain/index'` per project rules in `GEMINI.md`:
+- [x] **2.2 Enforce Domain Import Convention**
+  - [x] Update all bare folder imports (`'../domain'` or `'../../domain'`) to use `'.../domain/index'` per project rules in `GEMINI.md`:
     - `src/hooks/useDigest.ts`
     - `src/components/ExecutiveSummary/ExecutiveSummary.tsx`
     - `src/components/StatusBanner/StatusBanner.tsx`
 
-- [ ] **2.3 Colocate Missing Component Unit Tests**
-  - [ ] Add `TopicSelector.test.tsx` (chip rendering, toggling active state, disabling last active topic).
-  - [ ] Add `ArticleCard.test.tsx` (rendering headline, source, relative time, score bar, sanitized links).
-  - [ ] Add `ExecutiveSummary.test.tsx` (skeleton pulse loading, summary quote display).
-  - [ ] Add `DigestHeader.test.tsx` (date formatting, active topic tags, refresh button disabled during fetch).
+- [x] **2.3 Colocate Missing Component Unit Tests**
+  - [x] Add `TopicSelector.test.tsx` (chip rendering, toggling active state, disabling last active topic).
+  - [x] Add `ArticleCard.test.tsx` (rendering headline, source, relative time, score bar, sanitized links).
+  - [x] Add `ExecutiveSummary.test.tsx` (skeleton pulse loading, summary quote display).
+  - [x] Add `DigestHeader.test.tsx` (date formatting, active topic tags, refresh button disabled during fetch).
 
-- [ ] **2.4 Clean Up Type Checks & Test Suite**
-  - [ ] Verify no `: any` remains anywhere in `src/` (`grep -r ": any" src/`).
-  - [ ] Ensure all exported functions maintain JSDoc docstrings.
-  - [ ] Verify 100% of Vitest test suites pass (`npm test -- --run`).
+- [x] **2.4 Clean Up Type Checks & Test Suite**
+  - [x] Verify no `: any` remains anywhere in `src/` (`grep -r ": any" src/`).
+  - [x] Ensure all exported functions maintain JSDoc docstrings.
+  - [x] Verify 100% of Vitest test suites pass (`npm test -- --run`).
 
 ---
 
