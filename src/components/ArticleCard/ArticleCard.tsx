@@ -1,5 +1,6 @@
-import type { DigestItem } from '../../domain';
+import type { DigestItem } from '../../domain/index';
 import { relativeTime } from '../../utils/relativeTime';
+import { sanitizeUrl } from '../../utils/sanitizeUrl';
 import { ScoreBar } from '../ScoreBar/ScoreBar';
 
 interface ArticleCardProps {
@@ -13,6 +14,7 @@ interface ArticleCardProps {
  */
 export function ArticleCard({ item, index, isFromCache }: ArticleCardProps) {
   const { article, relevanceScore, aiReason } = item;
+  const safeUrl = sanitizeUrl(article.url);
   
   // Staggered entrance animation delay
   const delay = Math.min(index * 75, 450);
@@ -40,16 +42,22 @@ export function ArticleCard({ item, index, isFromCache }: ArticleCardProps) {
             </span>
           </div>
 
-          <a 
-            href={article.url} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="block"
-          >
-            <h3 className="text-xl md:text-2xl font-serif font-bold text-gray-900 leading-tight group-hover:text-amber-700 transition-colors">
+          {safeUrl ? (
+            <a 
+              href={safeUrl} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="block"
+            >
+              <h3 className="text-xl md:text-2xl font-serif font-bold text-gray-900 leading-tight group-hover:text-amber-700 transition-colors">
+                {article.title}
+              </h3>
+            </a>
+          ) : (
+            <h3 className="text-xl md:text-2xl font-serif font-bold text-gray-900 leading-tight">
               {article.title}
             </h3>
-          </a>
+          )}
 
           <p className="text-sm md:text-base text-gray-600 leading-relaxed max-w-2xl">
             {article.description}

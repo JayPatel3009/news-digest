@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { fetchArticles, RateLimitError, NoResultsError } from './NewsAdapter';
-import type { Topic } from '../domain';
+import type { Topic } from '../domain/index';
 
 describe('NewsAdapter', () => {
   const mockTopic: Topic = {
@@ -10,8 +10,11 @@ describe('NewsAdapter', () => {
     isActive: true,
   };
 
+  const mockFetch = vi.fn();
+
   beforeEach(() => {
-    vi.stubGlobal('fetch', vi.fn());
+    mockFetch.mockReset();
+    vi.stubGlobal('fetch', mockFetch);
   });
 
   it('returns articles correctly on 200 response', async () => {
@@ -32,7 +35,7 @@ describe('NewsAdapter', () => {
       },
     ];
 
-    (fetch as any).mockResolvedValue({
+    mockFetch.mockResolvedValue({
       ok: true,
       status: 200,
       json: async () => ({ articles: mockArticles }),
@@ -47,7 +50,7 @@ describe('NewsAdapter', () => {
   });
 
   it('throws RateLimitError on 429 response', async () => {
-    (fetch as any).mockResolvedValue({
+    mockFetch.mockResolvedValue({
       ok: false,
       status: 429,
     });
@@ -56,7 +59,7 @@ describe('NewsAdapter', () => {
   });
 
   it('throws NoResultsError when articles array is empty', async () => {
-    (fetch as any).mockResolvedValue({
+    mockFetch.mockResolvedValue({
       ok: true,
       status: 200,
       json: async () => ({ articles: [] }),

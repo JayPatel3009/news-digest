@@ -35,3 +35,11 @@ Decision: Use Tailwind v4 with the Vite plugin instead of v3
 Reason: npx tailwindcss init -p fails in v4 — no config file needed.
 The plugin is added to vite.config.ts and CSS uses @import "tailwindcss".
 No tailwind.config.ts, no postcss.config.js, no @tailwind directives.
+
+## ADR-008: Server-Side API Middleware for Secret Isolation
+Decision: Isolate NewsAPI and Gemini API keys behind a Vite server middleware plugin (`vite-api-plugin.ts`).
+Reason: Keeps API keys out of client-side browser bundles, eliminates CORS restrictions from NewsAPI, reduces client bundle size by ~19kB, and maintains single-command (`npm run dev`) developer experience.
+
+## ADR-009: URL Protocol Sanitization & Structured Outputs
+Decision: Enforce `sanitizeUrl` on external news URLs and Gemini `responseSchema` with input bounding.
+Reason: Eliminates XSS vectors from untrusted article links and protects against indirect prompt injection.
