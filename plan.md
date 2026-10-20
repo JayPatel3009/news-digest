@@ -57,27 +57,27 @@ This plan tracks all improvements across **Security**, **Code Quality & Architec
 
 ## Phase 3: High-Value Features & User Experience
 
-- [ ] **3.1 Custom Topics & Keyword Subscriptions**
-  - [ ] Allow users to type custom keywords/topics (e.g., "Quantum Computing", "Local News") beyond the 10 static topics.
-  - [ ] Persist custom topics and active selections in `localStorage`.
+- [x] **3.1 Custom Topics & Keyword Subscriptions**
+  - [x] Allow users to type custom keywords/topics (e.g., "Quantum Computing", "Local News") beyond the 10 static topics.
+  - [x] Persist custom topics and active selections in `localStorage`.
 
-- [ ] **3.2 Audio Briefing ("Listen to Daily Brief")**
-  - [ ] Add a "Listen to Briefing" audio button in `DigestHeader`.
-  - [ ] Use browser's Web Speech API (`window.speechSynthesis`) to read the AI executive summary and top headlines aloud like a 2-minute morning news bulletin.
-  - [ ] Provide play / pause / stop controls.
+- [x] **3.2 Audio Briefing ("Listen to Daily Brief")**
+  - [x] Add a "Listen to Briefing" audio button in `DigestHeader`.
+  - [x] Use browser's Web Speech API (`window.speechSynthesis`) to read the AI executive summary and top headlines aloud like a 2-minute morning news bulletin.
+  - [x] Provide play / pause / stop controls.
 
-- [ ] **3.3 Interactive AI Deep Dives ("Ask About This Story")**
-  - [ ] Add quick AI prompt chips below each article card:
+- [x] **3.3 Interactive AI Deep Dives ("Ask About This Story")**
+  - [x] Add quick AI prompt chips below each article card:
     - 💡 *"Explain like I'm 5"*
     - ⚖️ *"Counter-arguments / other perspectives"*
     - 📈 *"Why this matters for business / tech"*
-  - [ ] Expand the card to display the dynamic on-demand AI response from Gemini.
+  - [x] Expand the card to display the dynamic on-demand AI response from Gemini.
 
-- [ ] **3.4 Bookmarks & Export Options**
-  - [ ] "Save for Later" bookmark button on article cards with a "Saved Stories" view.
-  - [ ] "Copy Briefing" button (formatted Markdown/plain text ready for Slack, Teams, or email).
-  - [ ] Web Share API (`navigator.share`) for mobile/desktop native sharing.
+- [x] **3.4 Bookmarks & Export Options**
+  - [x] "Save for Later" bookmark button on article cards with a "Saved Stories" view.
+  - [x] "Copy Briefing" button (formatted Markdown/plain text ready for Slack, Teams, or email).
+  - [x] Web Share API (`navigator.share`) for mobile/desktop native sharing.
 
-- [ ] **3.5 Topic Balancing & Time Filters**
-  - [ ] Add time filter: Past 24 hours (default), Past 3 days, Past week.
-  - [ ] Balance article quotas evenly across selected topics so one topic doesn't drown out others.
+- [x] **3.5 Topic Balancing & Time Filters**
+  - [x] Add time filter: Past 24 hours (default), Past 3 days, Past week.
+  - [x] Balance article quotas evenly across selected topics so one topic doesn't drown out others.

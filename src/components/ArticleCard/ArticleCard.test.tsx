@@ -1,7 +1,13 @@
-import { render, screen } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ArticleCard } from './ArticleCard';
 import type { DigestItem } from '../../domain/index';
+
+const mockAskDeepDive = vi.fn();
+
+vi.mock('../../adapters/GeminiAdapter', () => ({
+  askDeepDive: (...args: unknown[]) => mockAskDeepDive(...args),
+}));
 
 describe('ArticleCard', () => {
   const mockItem: DigestItem = {
@@ -17,6 +23,10 @@ describe('ArticleCard', () => {
     relevanceScore: 92,
     aiReason: 'Crucial advance for next-generation computing architectures.',
   };
+
+  beforeEach(() => {
+    mockAskDeepDive.mockReset();
+  });
 
   it('renders headline, source, description, and AI insight', () => {
     render(<ArticleCard item={mockItem} index={0} />);
@@ -51,6 +61,33 @@ describe('ArticleCard', () => {
 
     expect(screen.queryByRole('link')).toBeNull();
     expect(screen.getByText('Revolutionary Quantum Breakthrough Announced')).toBeInTheDocument();
+  });
+
+  it('renders interactive deep dive prompt chips and fetches explanation on click', async () => {
+    mockAskDeepDive.mockResolvedValue('Imagine quantum particles are like spinning spinning tops that never stop.');
+
+    render(<ArticleCard item={mockItem} index={0} />);
+
+    const eli5Btn = screen.getByRole('button', { name: /Explain simply/i });
+    expect(eli5Btn).toBeInTheDocument();
+
+    fireEvent.click(eli5Btn);
+
+    expect(mockAskDeepDive).toHaveBeenCalledWith(mockItem.article, 'eli5');
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/Imagine quantum particles are like spinning spinning tops/i)
+      ).toBeInTheDocument();
+    });
+
+    // Close button dismisses the answer panel
+    const closeBtn = screen.getByRole('button', { name: /Close deep dive/i });
+    fireEvent.click(closeBtn);
+
+    expect(
+      screen.queryByText(/Imagine quantum particles are like spinning spinning tops/i)
+    ).toBeNull();
   });
 
   it('applies staggered animation delay when not from cache', () => {

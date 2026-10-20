@@ -1,17 +1,19 @@
 import { useDigestStore } from '../store/digestStore';
 
 /**
- * Hook for managing topic selection logic.
- * Includes a guard to ensure at least one topic is always active.
+ * Hook for managing topic selection logic and custom user topics.
+ * Includes guards to ensure at least one topic is always active.
  */
 export function useTopics() {
-  const { topics, setTopics } = useDigestStore();
+  const { topics, setTopics, addCustomTopic, removeCustomTopic } = useDigestStore();
 
   const activeTopics = topics.filter((t) => t.isActive);
 
   /**
    * Toggles the active state of a topic by ID.
    * Will not deactivate a topic if it is the last active one.
+   * 
+   * @param id - The ID of the topic to toggle.
    */
   const toggleTopic = (id: string) => {
     const topic = topics.find((t) => t.id === id);
@@ -32,6 +34,9 @@ export function useTopics() {
   /**
    * Checks if a topic is the last one active.
    * Useful for UI components to disable the toggle button/chip.
+   * 
+   * @param id - The ID of the topic to check.
+   * @returns True if the topic is active and the only active topic remaining.
    */
   const isLastActive = (id: string): boolean => {
     const topic = topics.find((t) => t.id === id);
@@ -43,5 +48,7 @@ export function useTopics() {
     activeTopics,
     toggleTopic,
     isLastActive,
+    addCustomTopic,
+    removeCustomTopic,
   };
 }

@@ -108,6 +108,39 @@ ${JSON.stringify(sanitizedArticles)}`;
 }
 
 /**
+ * Generates an on-demand deep dive perspective on a single article.
+ */
+async function generateDeepDive(
+  article: { title: string; description: string | null; sourceName: string },
+  questionType: 'eli5' | 'counter' | 'impact',
+  apiKey: string
+): Promise<string> {
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const model = genAI.getGenerativeModel({
+    model: 'gemini-2.5-flash-lite',
+    systemInstruction:
+      'You are an insightful, clear, and balanced news editor. Provide concise, high-signal explanations directly answering the user prompt. Keep the output under 3 sentences. Plain text only, no markdown headers or bullet lists.',
+  });
+
+  const prompts: Record<string, string> = {
+    eli5: 'Explain this news story simply as if explaining to a 5-year-old using clear everyday analogies.',
+    counter: 'Provide the primary counter-arguments, risks, caveats, or alternative perspectives on this development.',
+    impact: 'Explain why this development matters for the broader economy, tech industry, or consumers.',
+  };
+
+  const instruction = prompts[questionType] || prompts.impact;
+  const userPrompt = `${instruction}
+
+Article: ${article.title}
+Source: ${article.sourceName}
+Summary: ${article.description || ''}`;
+
+  const result = await model.generateContent(userPrompt);
+  const response = await result.response;
+  return response.text().trim();
+}
+
+/**
  * Creates the server-side API middleware plugin to keep API keys secure
  * and handle NewsAPI + Gemini requests on the server side.
  */
@@ -204,6 +237,49 @@ export function apiPlugin(): Plugin {
           res.end(JSON.stringify(summary));
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : 'Failed to summarise with Gemini';
+          res.statusCode = 500;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ message }));
+        }
+      });
+
+      return;
+    }
+
+    // POST /api/deep-dive
+    if (url.pathname === '/api/deep-dive' && req.method === 'POST') {
+      if (!geminiApiKey) {
+        res.statusCode = 500;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ message: 'GEMINI_API_KEY is not configured on the server' }));
+        return;
+      }
+
+      let bodyStr = '';
+      req.on('data', (chunk: Buffer | string) => {
+        bodyStr += chunk.toString();
+      });
+
+      req.on('end', async () => {
+        try {
+          const body = JSON.parse(bodyStr) as {
+            article?: { title: string; description: string | null; sourceName: string };
+            questionType?: 'eli5' | 'counter' | 'impact';
+          };
+
+          if (!body.article || !body.questionType) {
+            res.statusCode = 400;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ message: 'article and questionType are required' }));
+            return;
+          }
+
+          const answer = await generateDeepDive(body.article, body.questionType, geminiApiKey);
+          res.statusCode = 200;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ answer }));
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : 'Failed to generate deep dive';
           res.statusCode = 500;
           res.setHeader('Content-Type', 'application/json');
           res.end(JSON.stringify({ message }));

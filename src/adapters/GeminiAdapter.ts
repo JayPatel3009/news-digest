@@ -23,6 +23,8 @@ export interface DigestSummary {
   items: DigestSummaryItem[];
 }
 
+export type DeepDiveQuestionType = 'eli5' | 'counter' | 'impact';
+
 /**
  * Uses the secure server-side API endpoint to summarise and rank articles with Gemini.
  * 
@@ -75,4 +77,40 @@ export async function summarise(articles: Article[], topicLabels: string[]): Pro
   }
 
   return data as DigestSummary;
+}
+
+/**
+ * Requests an on-demand AI deep dive on a specific article.
+ * 
+ * @param article - The article to analyze.
+ * @param questionType - The perspective requested ('eli5', 'counter', or 'impact').
+ * @returns A promise resolving to the AI generated explanation string.
+ * @throws {Error} If the server request fails.
+ */
+export async function askDeepDive(
+  article: Article,
+  questionType: DeepDiveQuestionType
+): Promise<string> {
+  const response = await fetch('/api/deep-dive', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      article: {
+        title: article.title,
+        description: article.description,
+        sourceName: article.sourceName,
+      },
+      questionType,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorData = (await response.json().catch(() => ({}))) as { message?: string };
+    throw new Error(`Failed to generate deep dive: ${errorData.message || response.statusText}`);
+  }
+
+  const data = (await response.json()) as { answer?: string };
+  return data.answer || 'No explanation generated.';
 }
