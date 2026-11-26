@@ -2,11 +2,11 @@ import type { Article, Topic } from '../domain/index';
 import { hashUrl } from '../utils/hashUrl';
 
 /**
- * Custom error thrown when NewsAPI returns a 429 Rate Limit.
+ * Custom error thrown when the news provider returns a 429 rate limit.
  */
 export class RateLimitError extends Error {
   constructor() {
-    super('NewsAPI rate limit exceeded. Please try again later.');
+    super('News rate limit exceeded. Please try again later.');
     this.name = 'RateLimitError';
   }
 }
@@ -51,7 +51,7 @@ export async function fetchArticles(topic: Topic): Promise<Article[]> {
 
   if (!response.ok) {
     const errorData = (await response.json().catch(() => ({ message: 'Unknown error' }))) as { message?: string };
-    throw new Error(`NewsAPI error: ${errorData.message || response.statusText}`);
+    throw new Error(`News request failed: ${errorData.message || response.statusText}`);
   }
 
   const data = (await response.json()) as { articles?: NewsApiArticle[] };

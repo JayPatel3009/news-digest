@@ -2,7 +2,7 @@
 
 > **AI-powered news briefing — built entirely with structured vibe coding using Gemini CLI agents.**
 
-The Daily Digest fetches live headlines from NewsAPI, summarises and ranks them using Google's Gemini API, and delivers a personalised daily briefing tailored to your selected topics — all in the browser, with no backend and no deployment config.
+The Daily Digest fetches live headlines from the Currents news API, summarises and ranks them using Google's Gemini API, and delivers a personalised daily briefing tailored to your selected topics. API keys stay on the Vite dev and preview server. There is no database and no separate backend process to deploy.
 
 This project was built in a single afternoon as a live demo for a presentation on effective AI use in software development. Every agent session, architecture decision, bug, and honest moment is documented in [`BUILD_DIARY.md`](./BUILD_DIARY.md).
 
@@ -38,14 +38,18 @@ This project was built in a single afternoon as a live demo for a presentation o
 
 ## ✨ Features
 
-- **AI curation** — Gemini reads, ranks, and summarises every article with a 1–10 relevance score and a one-sentence explanation of why it matters today
+- **AI curation** — Gemini reads, ranks, and summarises every article with a 0–100 relevance score and a one-sentence explanation of why it matters today
 - **Executive briefing** — a three-sentence summary of the biggest story, written entirely by Gemini
-- **Live headlines** — fetches the 5 most recent articles per topic from NewsAPI in parallel using `Promise.all`
+- **Live headlines** — fetches the 10 most recent articles per topic from Currents, covering the last 7 days, in parallel using `Promise.all`
 - **Smart deduplication** — duplicate URLs are removed before any AI call, saving tokens and improving summary quality
-- **10 topics** — Technology, AI, Finance, Science, Health, Space, Climate, Politics, Culture, Design
+- **10 topics** — Technology, AI, Finance, Science, Health, Space, Climate, Politics, Culture, Design — plus custom topics you add yourself
+- **Saved stories** — bookmark articles in the browser. Bookmarks and custom topics persist in `localStorage`
+- **Deep dives** — ask Gemini to explain a story simply, give the counter-argument, or spell out the impact
+- **Audio briefing** — listen to the summary and top stories through the browser's Web Speech API
+- **Copy and share** — copy the briefing as Markdown, or share it through the browser share sheet
 - **Session caching** — the last generated digest is persisted to `sessionStorage` so a page refresh restores your briefing instantly without re-triggering the APIs
-- **Privacy-first** — no backend, no database, no user accounts, no tracking
-- **Zero infrastructure** — one command to run, nothing to deploy or maintain
+- **Privacy-first** — no database, no user accounts, no tracking. API keys stay on the server
+- **Zero extra infrastructure** — `npm run dev` or `npm run preview` runs the UI and the API routes together
 
 ---
 
@@ -53,12 +57,12 @@ This project was built in a single afternoon as a live demo for a presentation o
 
 | Layer | Technology | Notes |
 |---|---|---|
-| Frontend | React 18 + TypeScript | Strict mode, verbatimModuleSyntax enabled |
-| Build tool | Vite | Dev server on localhost:5173 |
+| Frontend | React 19 + TypeScript | Strict mode, verbatimModuleSyntax enabled |
+| Build tool | Vite | Dev server on localhost:5173. `vite-api-plugin.ts` serves `/api/*` |
 | Styling | Tailwind CSS v4 | `@tailwindcss/vite` plugin — no config file needed |
-| AI | Google Generative AI SDK | Model: `gemini-2.0-flash` |
-| News data | NewsAPI | Free tier — 100 req/day, localhost allowed |
-| State | Zustand | Global digest + topic state |
+| AI | Google Generative AI SDK | Model: `gemini-2.5-flash-lite`, called from the Vite server |
+| News data | Currents | Free tier — 250 req/day, production use allowed with attribution |
+| State | Zustand | Global digest, topic, and bookmark state |
 | Testing | Vitest + React Testing Library | Colocated test files |
 
 ---
@@ -68,10 +72,12 @@ This project was built in a single afternoon as a live demo for a presentation o
 ### Prerequisites
 
 - **Node.js** v18 or higher — check with `node --version`
-- **NewsAPI key** — free account at [newsapi.org](https://newsapi.org). The free tier allows 100 requests per day and permits browser requests from `localhost`
+- **Currents API key** — free account at [currentsapi.services](https://currentsapi.services/en/docs/). The free tier allows 250 requests per day and can be used in a production app. Show attribution and link each story back to the publisher
 - **Gemini API key** — free at [aistudio.google.com/apikey](https://aistudio.google.com/apikey). When creating the key, select **Create a new project** to ensure the free tier quota is active. If you use an existing Google Cloud project with billing restrictions, you may receive a `limit: 0` quota error
 
 > **⚠️ Region note:** If you are in New Zealand or Australia, the Gemini API free tier may require billing to be enabled on your Google Cloud project even for zero-cost usage. Linking a credit card unblocks the quota — you will not be charged within free tier limits.
+
+> **⚠️ Currents and AI summaries:** Currents allows displaying a title, a short description, and a link to the original article. Their terms say customer-facing AI summaries are not included by default and may need separate permission. This app summarises those short snippets and always links out to the publisher.
 
 ---
 
@@ -96,9 +102,11 @@ cp .env.example .env.local
 Open `.env.local` and replace the placeholder values:
 
 ```env
-VITE_NEWS_API_KEY=your_newsapi_key_here
-VITE_GEMINI_API_KEY=your_gemini_api_key_here
+CURRENTS_API_KEY=your_currents_api_key_here
+GEMINI_API_KEY=your_gemini_api_key_here
 ```
+
+`VITE_CURRENTS_API_KEY` is accepted and is used ahead of any old news key still in the file. The Vite server reads it. Do not reference that name from client code, or Vite can bundle the key. `NEWS_API_KEY` and `VITE_NEWS_API_KEY` are fallbacks only when no Currents name is set.
 
 > Never commit `.env.local` — it is already in `.gitignore`.
 
@@ -112,7 +120,7 @@ npm run dev
 
 Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-Select one or more topics and click **Generate** to produce your first digest.
+Select one or more topics and click **Compile My Digest** to produce your first digest.
 
 ---
 
@@ -128,9 +136,12 @@ npm run test
 
 ```bash
 npm run build
+npm run preview
 ```
 
-> See [Known Limitations](#-known-limitations) before deploying — the Gemini API key is bundled into the client in this configuration.
+`npm run preview` serves the built app and the same `/api` routes, so keys stay on the server. Uploading the `dist/` folder to a static host by itself will not serve those routes.
+
+> See [Known Limitations](#-known-limitations) before deploying.
 
 ---
 
@@ -143,12 +154,15 @@ User selects topics
        │
        ▼
 NewsAdapter.fetchArticles()     ← one call per topic, in parallel
+       │                         ← browser calls GET /api/news
+       ▼
+Vite API plugin                 ← Currents search, last 7 days, 10 articles
        │
        ▼
 Deduplicate by URL              ← browser-side, before any AI call
        │
        ▼
-GeminiAdapter.summarise()       ← single call with all articles
+GeminiAdapter.summarise()       ← POST /api/summarise (Gemini on the server)
        │
        ▼
 Build Digest object             ← typed, scored, sorted by relevance
@@ -158,9 +172,11 @@ Render + persist to             ← sessionStorage for refresh survival
 sessionStorage
 ```
 
+Articles are ordered by **relevance score, highest first**. Currents supplies a recent pool (the last 7 days, 10 per topic). Gemini scores that pool from 0 to 100, and `useDigest` sorts the list before it renders. A newer story does not jump ahead of a more important one.
+
 ### Key architectural decisions
 
-**No backend** — all API calls happen directly from the browser. This keeps the demo to a single `npm run dev` with nothing to configure or maintain. See [ADR-001](./DECISIONS.md) for full reasoning.
+**API keys on the Vite server** — the browser calls `/api/news`, `/api/summarise`, and `/api/deep-dive`. `vite-api-plugin.ts` holds the Currents and Gemini keys and runs with `npm run dev` and `npm run preview`. See [ADR-008](./DECISIONS.md) and [ADR-010](./DECISIONS.md).
 
 **Domain types first** — `src/domain/index.ts` was the first file written. All adapters, hooks, and components import from it. TypeScript enforces correctness across every layer — four agent mistakes were caught at compile time rather than runtime because of this.
 
@@ -184,6 +200,7 @@ news-digest/
 ├── .env.example            # Environment variable template
 ├── .env.local              # Your real keys — never committed
 ├── vite.config.ts          # Vite config (no test config — see vitest.config.ts)
+├── vite-api-plugin.ts      # Server routes for Currents, Gemini summary, and deep dive
 ├── vitest.config.ts        # Vitest config (separate from Vite in this setup)
 ├── tsconfig.json
 │
@@ -192,29 +209,34 @@ news-digest/
     │   └── index.ts        # ← All TypeScript interfaces live here. Read this first.
     │
     ├── adapters/
-    │   ├── NewsAdapter.ts          # Calls NewsAPI, maps response to Article[]
+    │   ├── NewsAdapter.ts          # Calls GET /api/news, maps response to Article[]
     │   ├── NewsAdapter.test.ts
-    │   ├── GeminiAdapter.ts        # Calls Gemini, parses DigestSummary
+    │   ├── GeminiAdapter.ts        # Calls /api/summarise and /api/deep-dive
     │   └── GeminiAdapter.test.ts
     │
     ├── hooks/
     │   ├── useTopics.ts            # Topic toggle logic with last-active guard
-    │   └── useDigest.ts            # Orchestrates the full fetch → summarise flow
+    │   ├── useDigest.ts            # Orchestrates the full fetch → summarise flow
+    │   ├── useDeepDive.ts          # On-demand ELI5, counter, and impact answers
+    │   └── useAudioBriefing.ts     # Web Speech playback of the briefing
     │
     ├── store/
-    │   └── digestStore.ts          # Zustand store — topics, digest, status, error
+    │   └── digestStore.ts          # Zustand store — topics, digest, bookmarks, status
     │
     ├── components/
-    │   ├── TopicSelector/          # Chip multi-select UI
-    │   ├── DigestHeader/           # Date, topic pills, Refresh button
+    │   ├── TopicSelector/          # Chip multi-select UI and custom topics
+    │   ├── DigestHeader/           # Date, topic pills, audio, copy/share, refresh
     │   ├── ExecutiveSummary/       # Amber blockquote with skeleton loading state
-    │   ├── ArticleCard/            # Title link, source, time, AI reason, ScoreBar
+    │   ├── ArticleCard/            # Title link, source, time, AI reason, bookmark, deep dive
     │   ├── StatusBanner/           # Loading and error message display
-    │   └── ScoreBar/               # Animated relevance score bar (1–10)
+    │   └── ScoreBar/               # Animated relevance score bar (0–100)
     │
     ├── utils/
     │   ├── hashUrl.ts              # Generates stable Article.id from URL
-    │   └── relativeTime.ts         # "2 hours ago" formatting
+    │   ├── relativeTime.ts         # "2 hours ago" formatting
+    │   ├── sanitizeUrl.ts          # Allows only http(s) article links
+    │   ├── exportBriefing.ts       # Markdown copy and share of the digest
+    │   └── mapCurrentsNews.ts      # Maps Currents search results to Article fields
     │
     ├── ErrorBoundary.tsx
     ├── App.tsx
@@ -259,19 +281,21 @@ Each session was followed by a commit tagged `[gemini-cli]`. The full prompt use
 
 ## ⚠️ Known Limitations
 
-### API key exposure
-`VITE_GEMINI_API_KEY` and `VITE_NEWS_API_KEY` are bundled into the client-side JavaScript at build time and are visible to anyone who inspects the network tab. This is acceptable for a local demo but **not safe for a publicly deployed app**.
+### The API server is the Vite process
+`CURRENTS_API_KEY` (or `VITE_CURRENTS_API_KEY`) and `GEMINI_API_KEY` are read by `vite-api-plugin.ts`. They are not bundled into client JavaScript when you use `npm run dev` or `npm run preview`, as long as client code does not read the `VITE_` name.
 
-For production deployment, route both API calls through a lightweight server-side proxy so keys never reach the browser. A simple Express or Next.js API route is sufficient.
+A static host that only serves `dist/` has no `/api` routes. Run `npm run preview`, or host the app somewhere that executes the same Vite middleware.
 
-### NewsAPI CORS restriction
-NewsAPI's free tier explicitly allows browser requests from `localhost` but blocks all requests from deployed domains. Deploying this app without a backend proxy will break the news fetch step silently.
+### Currents free tier
+The free plan allows 250 requests per day, 20 results per request, and a 7-day search window. This app asks for 10 English articles per topic inside that window. Exceeding the daily cap returns HTTP 429.
+
+Currents requires attribution and a link to the original publisher. Do not store a permanent archive of article text. Customer-facing AI summaries may need separate permission from Currents.
 
 ### Gemini free tier by region
 The Gemini API free tier is not uniformly available in all regions. If you receive a `limit: 0` quota error, link a billing account to your Google Cloud project — you will not be charged within free tier usage limits, but the billing link is required to unlock the quota in some regions.
 
 ### sessionStorage scope
-The digest cache is stored in `sessionStorage`, which clears when the browser tab is closed. This is intentional for demo freshness. If you want persistence across sessions, replace `sessionStorage` with `localStorage` in `useDigest.ts`.
+The digest cache is stored in `sessionStorage`, which clears when the browser tab is closed. This is intentional for demo freshness. Bookmarks and custom topics use `localStorage` and survive a closed tab. If you want the digest itself to persist across sessions, replace `sessionStorage` with `localStorage` in `useDigest.ts`.
 
 ---
 
@@ -299,7 +323,7 @@ MIT — see [`LICENSE`](./LICENSE) for details.
 ## 🙏 Built With
 
 - [Gemini CLI](https://github.com/google-gemini/gemini-cli) — open source AI coding agent (Apache 2.0)
-- [NewsAPI](https://newsapi.org) — real-time news headlines
+- [Currents](https://currentsapi.services/) — real-time news headlines
 - [Google Gemini](https://ai.google.dev) — AI summarisation
 - [React](https://react.dev) + [TypeScript](https://typescriptlang.org) + [Vite](https://vitejs.dev)
-- [Tailwind CSS v4](https://tailwindcss.com) + [Zustand](https://zustand-demo.pmnd.rs)tps://zustand-demo.pmnd.rs)
+- [Tailwind CSS v4](https://tailwindcss.com) + [Zustand](https://zustand-demo.pmnd.rs)

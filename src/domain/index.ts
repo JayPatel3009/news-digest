@@ -6,7 +6,7 @@ export interface Topic {
   id: string;
   /** Human-readable label shown in the UI */
   label: string;
-  /** Search query string sent to NewsAPI */
+  /** Search query string sent to the news provider */
   query: string;
   /** Whether this topic is currently selected by the user */
   isActive: boolean;
@@ -15,7 +15,7 @@ export interface Topic {
 }
 
 /**
- * A single news article fetched from NewsAPI.
+ * A single news article fetched from the news provider.
  */
 export interface Article {
   /** Stable hash generated from the article URL */
@@ -40,7 +40,7 @@ export interface Article {
 export interface DigestItem {
   /** The article this item refers to */
   article: Article;
-  /** Relevance score from 1 to 10 assigned by Gemini */
+  /** Relevance score from 0 to 100 assigned by Gemini */
   relevanceScore: number;
   /** One sentence from Gemini explaining why this article matters */
   aiReason: string;

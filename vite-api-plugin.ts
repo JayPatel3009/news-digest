@@ -1,18 +1,15 @@
 import type { Plugin, Connect } from 'vite';
 import { loadEnv } from 'vite';
 import { GoogleGenerativeAI, SchemaType, type ResponseSchema } from '@google/generative-ai';
+import { currentsSearchWindow, mapCurrentsNews, type CurrentsNewsItem } from './src/utils/mapCurrentsNews';
 
 // Permit local dev TLS bypass for environments with custom/corporate proxy root certificates
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
-interface NewsApiArticle {
-  url: string;
-  title: string;
-  description: string | null;
-  source: {
-    name: string;
-  };
-  publishedAt: string;
+interface CurrentsSearchResponse {
+  status?: string;
+  news?: CurrentsNewsItem[];
+  message?: string;
 }
 
 interface RawArticlePayload {
@@ -142,16 +139,25 @@ Summary: ${article.description || ''}`;
 
 /**
  * Creates the server-side API middleware plugin to keep API keys secure
- * and handle NewsAPI + Gemini requests on the server side.
+ * and handle Currents + Gemini requests on the server side.
  */
 export function apiPlugin(): Plugin {
-  let newsApiKey = '';
+  let currentsApiKey = '';
   let geminiApiKey = '';
 
   const setupKeys = (mode: string) => {
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
     const env = loadEnv(mode, process.cwd(), '');
-    newsApiKey = env.NEWS_API_KEY || env.VITE_NEWS_API_KEY || process.env.NEWS_API_KEY || process.env.VITE_NEWS_API_KEY || '';
+    currentsApiKey =
+      env.CURRENTS_API_KEY ||
+      env.VITE_CURRENTS_API_KEY ||
+      process.env.CURRENTS_API_KEY ||
+      process.env.VITE_CURRENTS_API_KEY ||
+      env.NEWS_API_KEY ||
+      env.VITE_NEWS_API_KEY ||
+      process.env.NEWS_API_KEY ||
+      process.env.VITE_NEWS_API_KEY ||
+      '';
     geminiApiKey = env.GEMINI_API_KEY || env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || '';
   };
 
@@ -172,29 +178,62 @@ export function apiPlugin(): Plugin {
         return;
       }
 
-      if (!newsApiKey) {
+      if (!currentsApiKey) {
         res.statusCode = 500;
         res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ message: 'NEWS_API_KEY is not configured on the server' }));
+        res.end(JSON.stringify({ message: 'A Currents API key is not configured. Set CURRENTS_API_KEY or VITE_CURRENTS_API_KEY.' }));
         return;
       }
 
-      const newsApiUrl = `https://newsapi.org/v2/everything?q=${encodeURIComponent(query)}&pageSize=10&sortBy=publishedAt&apiKey=${newsApiKey}`;
-      
-      fetch(newsApiUrl, {
+      const { startDate, endDate } = currentsSearchWindow(new Date());
+      const params = new URLSearchParams({
+        keywords: query,
+        language: 'en',
+        page_number: '1',
+        page_size: '10',
+        start_date: startDate,
+        end_date: endDate,
+      });
+      const currentsUrl = `https://api.currentsapi.services/v1/search?${params.toString()}`;
+
+      fetch(currentsUrl, {
         headers: {
+          Authorization: `Bearer ${currentsApiKey}`,
           'User-Agent': 'DailyDigestApp/1.0',
         },
       })
         .then(async (apiRes) => {
-          const status = apiRes.status;
-          const data = (await apiRes.json()) as { articles?: NewsApiArticle[]; message?: string };
-          res.statusCode = status;
+          const rawText = await apiRes.text();
+          let data: CurrentsSearchResponse;
+          try {
+            data = JSON.parse(rawText) as CurrentsSearchResponse;
+          } catch {
+            res.statusCode = apiRes.ok ? 502 : apiRes.status;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ message: rawText.slice(0, 300) || 'Currents returned a non-JSON response' }));
+            return;
+          }
+
+          if (apiRes.status === 429) {
+            res.statusCode = 429;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ message: data.message || 'Currents rate limit exceeded' }));
+            return;
+          }
+
+          if (!apiRes.ok || data.status === 'error') {
+            res.statusCode = apiRes.ok ? 502 : apiRes.status;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ message: data.message || 'Currents request failed' }));
+            return;
+          }
+
+          res.statusCode = 200;
           res.setHeader('Content-Type', 'application/json');
-          res.end(JSON.stringify(data));
+          res.end(JSON.stringify({ articles: mapCurrentsNews(data.news) }));
         })
         .catch((err: unknown) => {
-          const message = err instanceof Error ? err.message : 'Failed to reach NewsAPI';
+          const message = err instanceof Error ? err.message : 'Failed to reach Currents';
           res.statusCode = 502;
           res.setHeader('Content-Type', 'application/json');
           res.end(JSON.stringify({ message }));
