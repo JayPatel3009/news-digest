@@ -2,7 +2,7 @@ import { useEffect, useCallback } from 'react';
 import { useDigestStore } from '../store/digestStore';
 import { fetchArticles, RateLimitError, NoResultsError } from '../adapters/NewsAdapter';
 import { summarise, GeminiParseError } from '../adapters/GeminiAdapter';
-import type { Article, Digest, DigestItem } from '../domain';
+import type { Article, Digest, DigestItem } from '../domain/index';
 
 const SESSION_KEY = 'last_digest';
 

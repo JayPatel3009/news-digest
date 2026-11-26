@@ -1,4 +1,4 @@
-import type { Article, Topic } from '../domain';
+import type { Article, Topic } from '../domain/index';
 import { hashUrl } from '../utils/hashUrl';
 
 /**
@@ -21,9 +21,6 @@ export class NoResultsError extends Error {
   }
 }
 
-const NEWS_API_KEY = import.meta.env.VITE_NEWS_API_KEY;
-const BASE_URL = 'https://newsapi.org/v2/everything';
-
 interface NewsApiArticle {
   url: string;
   title: string;
@@ -35,7 +32,7 @@ interface NewsApiArticle {
 }
 
 /**
- * Fetches articles from NewsAPI for a given topic.
+ * Fetches articles from the backend API for a given topic.
  * 
  * @param topic - The topic to fetch articles for.
  * @returns A promise that resolves to an array of Article objects.
@@ -44,11 +41,7 @@ interface NewsApiArticle {
  * @throws {Error} For other network or API errors.
  */
 export async function fetchArticles(topic: Topic): Promise<Article[]> {
-  if (!NEWS_API_KEY) {
-    throw new Error('VITE_NEWS_API_KEY is not defined');
-  }
-
-  const url = `${BASE_URL}?q=${encodeURIComponent(topic.query)}&pageSize=10&sortBy=publishedAt&apiKey=${NEWS_API_KEY}`;
+  const url = `/api/news?query=${encodeURIComponent(topic.query)}`;
 
   const response = await fetch(url);
 
@@ -61,7 +54,7 @@ export async function fetchArticles(topic: Topic): Promise<Article[]> {
     throw new Error(`NewsAPI error: ${errorData.message || response.statusText}`);
   }
 
-  const data = (await response.json()) as { articles: NewsApiArticle[] };
+  const data = (await response.json()) as { articles?: NewsApiArticle[] };
 
   if (!data.articles || data.articles.length === 0) {
     throw new NoResultsError(topic.label);

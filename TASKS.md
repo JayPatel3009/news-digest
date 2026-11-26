@@ -55,3 +55,17 @@
 - [x] DEMO-03: Verify NewsAPI CORS on localhost in browser Network tab
 - [x] DEMO-04: End-to-end test with real keys — generate real digest,
                refresh page, confirm sessionStorage restores it
+
+## Stage 7 — Security Hardening (Phase 1)
+- [x] SEC-01: src/utils/sanitizeUrl.ts + sanitizeUrl.test.ts — XSS defense
+- [x] SEC-02: ArticleCard.tsx — safe external link handling
+- [x] SEC-03: Gemini structured outputs with responseSchema & prompt injection defense
+- [x] SEC-04: vite-api-plugin.ts — isolate API keys behind server middleware
+- [x] SEC-05: Update NewsAdapter and GeminiAdapter to use server endpoints
+- [x] SEC-06: Resolved 8 ESLint errors and eliminated : any usages in adapters
+
+## Stage 8 — Code Quality & Test Coverage (Phase 2)
+- [x] QA-07: Resolved remaining ESLint errors in ErrorBoundary.tsx and ScoreBar.tsx
+- [x] QA-08: Standardized all domain imports to use 'domain/index'
+- [x] QA-09: Added colocated component tests (TopicSelector, ArticleCard, ExecutiveSummary, DigestHeader)
+- [x] QA-10: 100% of 10 test suites (37 tests) passing; zero ': any' in codebase

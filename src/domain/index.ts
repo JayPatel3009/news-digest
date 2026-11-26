@@ -10,6 +10,8 @@ export interface Topic {
   query: string;
   /** Whether this topic is currently selected by the user */
   isActive: boolean;
+  /** Whether this topic was created by the user (custom topic) */
+  isCustom?: boolean;
 }
 
 /**

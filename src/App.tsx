@@ -1,4 +1,5 @@
 import { useDigest } from './hooks/useDigest';
+import { useDigestStore } from './store/digestStore';
 import { TopicSelector } from './components/TopicSelector/TopicSelector';
 import { StatusBanner } from './components/StatusBanner/StatusBanner';
 import { DigestHeader } from './components/DigestHeader/DigestHeader';
@@ -12,10 +13,15 @@ import { ErrorBoundary } from './components/ErrorBoundary';
  */
 function App() {
   const { digest, status, error, generate } = useDigest();
+  const { bookmarks, showBookmarksOnly, setShowBookmarksOnly } = useDigestStore();
 
   const isIdle = status === 'idle' && !digest;
   const isGenerating = status === 'fetching' || status === 'summarising';
   const hasContent = !!digest;
+
+  const displayedItems = showBookmarksOnly
+    ? digest?.items.filter((item) => bookmarks.some((b) => b.id === item.article.id)) ?? []
+    : digest?.items ?? [];
 
   return (
     <div className="min-h-screen bg-[#fafaf9] selection:bg-amber-100">
@@ -67,14 +73,30 @@ function App() {
                   status={status} 
                 />
                 <div className="mt-16 divide-y divide-gray-100">
-                  {digest.items.map((item, index) => (
-                    <ArticleCard 
-                      key={item.article.id} 
-                      item={item} 
-                      index={index} 
-                      isFromCache={digest.isFromCache}
-                    />
-                  ))}
+                  {showBookmarksOnly && displayedItems.length === 0 ? (
+                    <div className="py-16 text-center space-y-3">
+                      <p className="text-gray-500 font-serif italic text-lg">No saved stories yet.</p>
+                      <p className="text-gray-400 text-xs">Click the "Save" button on any article card to bookmark stories for later reading.</p>
+                      <div>
+                        <button
+                          type="button"
+                          onClick={() => setShowBookmarksOnly(false)}
+                          className="mt-4 px-4 py-2 bg-gray-900 text-white text-xs font-bold rounded-full hover:bg-amber-600 transition-colors cursor-pointer"
+                        >
+                          View All Stories
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    displayedItems.map((item, index) => (
+                      <ArticleCard 
+                        key={item.article.id} 
+                        item={item} 
+                        index={index} 
+                        isFromCache={digest.isFromCache}
+                      />
+                    ))
+                  )}
                 </div>
               </div>
             </div>

@@ -1,91 +1,116 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import type { Article } from '../domain';
+import type { Article } from '../domain/index';
 
 /**
  * Custom error thrown when Gemini returns a malformed response.
  */
 export class GeminiParseError extends Error {
-  public rawResponse: string;
-  constructor(rawResponse: string) {
-    super('Failed to parse Gemini response as valid JSON.');
+  public rawResponse?: string;
+  constructor(message = 'Failed to parse Gemini response as valid JSON.', rawResponse?: string) {
+    super(message);
+    this.name = 'GeminiParseError';
     this.rawResponse = rawResponse;
   }
 }
 
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
-
-interface DigestSummary {
-  executiveSummary: string;
-  items: {
-    articleId: string;
-    relevanceScore: number;
-    aiReason: string;
-  }[];
+export interface DigestSummaryItem {
+  articleId: string;
+  relevanceScore: number;
+  aiReason: string;
 }
 
+export interface DigestSummary {
+  executiveSummary: string;
+  items: DigestSummaryItem[];
+}
+
+export type DeepDiveQuestionType = 'eli5' | 'counter' | 'impact';
+
 /**
- * Uses Gemini to summarise and rank a list of articles.
+ * Uses the secure server-side API endpoint to summarise and rank articles with Gemini.
  * 
  * @param articles - The articles to analyze.
  * @param topicLabels - The labels of the active topics.
  * @returns A promise that resolves to the generated digest summary.
  * @throws {GeminiParseError} If the AI response cannot be parsed or is missing fields.
+ * @throws {Error} If the server API returns an error status.
  */
 export async function summarise(articles: Article[], topicLabels: string[]): Promise<DigestSummary> {
-  if (!GEMINI_API_KEY) {
-    throw new Error('VITE_GEMINI_API_KEY is not defined');
-  }
+  const response = await fetch('/api/summarise', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ articles, topicLabels }),
+  });
 
-  const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
-
-  const systemPrompt = "You are a sharp, concise news editor. You rank articles by importance (relevanceScore from 0 to 100, where 100 is most important) and explain why each one matters to a general reader. Never sensationalise. Always return valid JSON and nothing else.";
-  
-  const userPrompt = `Given these ${articles.length} articles across topics: ${topicLabels.join(', ')}, 
-return ONLY valid JSON matching exactly this schema:
-{
-  "executiveSummary": string,
-  "items": [{
-    "articleId": string,
-    "relevanceScore": number,
-    "aiReason": string
-  }]
-}
-Articles: ${JSON.stringify(articles.map(a => ({ id: a.id, title: a.title, description: a.description, source: a.sourceName })))}`;
-
-  try {
-    const result = await model.generateContent(`${systemPrompt}\n\n${userPrompt}`);
-    const response = await result.response;
-    const rawText = response.text();
-
-    if (!rawText) {
-      throw new GeminiParseError('Empty response from Gemini');
-    }
-
-    // Clean the response: strip markdown code fences if present
-    const jsonString = rawText.replace(/^```json\s*/, '').replace(/```\s*$/, '').trim();
-
-    let parsed: any;
-    try {
-      parsed = JSON.parse(jsonString);
-    } catch (e) {
-      throw new GeminiParseError(rawText);
-    }
-
-    if (!parsed.executiveSummary || !Array.isArray(parsed.items)) {
-      throw new GeminiParseError(rawText);
-    }
-
-    return parsed as DigestSummary;
-  } catch (error: any) {
-    if (error instanceof GeminiParseError) throw error;
+  if (!response.ok) {
+    const errorData = (await response.json().catch(() => ({}))) as { message?: string; rawResponse?: string };
     
-    // Check if it's a SDK specific error
-    const message = error?.message || 'Unknown Gemini error';
-    if (message.includes('Please try again')) {
+    if (response.status === 422 || errorData.rawResponse) {
+      throw new GeminiParseError(errorData.message || 'Malformed AI response', errorData.rawResponse);
+    }
+    
+    const message = errorData.message || response.statusText;
+    if (message.includes('busy') || message.includes('try again') || response.status === 503) {
       throw new Error('Gemini is currently busy. Please try again in a few seconds.');
     }
-    
+
     throw new Error(`Gemini API error: ${message}`);
   }
+
+  let data: unknown;
+  try {
+    data = await response.json();
+  } catch {
+    throw new GeminiParseError('Failed to parse API response as JSON');
+  }
+
+  if (
+    !data ||
+    typeof data !== 'object' ||
+    !('executiveSummary' in data) ||
+    typeof (data as { executiveSummary: unknown }).executiveSummary !== 'string' ||
+    !('items' in data) ||
+    !Array.isArray((data as { items: unknown }).items)
+  ) {
+    throw new GeminiParseError('Response missing required fields');
+  }
+
+  return data as DigestSummary;
+}
+
+/**
+ * Requests an on-demand AI deep dive on a specific article.
+ * 
+ * @param article - The article to analyze.
+ * @param questionType - The perspective requested ('eli5', 'counter', or 'impact').
+ * @returns A promise resolving to the AI generated explanation string.
+ * @throws {Error} If the server request fails.
+ */
+export async function askDeepDive(
+  article: Article,
+  questionType: DeepDiveQuestionType
+): Promise<string> {
+  const response = await fetch('/api/deep-dive', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      article: {
+        title: article.title,
+        description: article.description,
+        sourceName: article.sourceName,
+      },
+      questionType,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorData = (await response.json().catch(() => ({}))) as { message?: string };
+    throw new Error(`Failed to generate deep dive: ${errorData.message || response.statusText}`);
+  }
+
+  const data = (await response.json()) as { answer?: string };
+  return data.answer || 'No explanation generated.';
 }

@@ -1,4 +1,4 @@
-import type { Digest } from '../../domain';
+import type { Digest } from '../../domain/index';
 
 interface StatusBannerProps {
   status: Digest['status'];
