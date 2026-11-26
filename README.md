@@ -2,7 +2,7 @@
 
 > **AI-powered news briefing — built entirely with structured vibe coding using Gemini CLI agents.**
 
-The Daily Digest fetches live headlines from the Currents news API, summarises and ranks them using Google's Gemini API, and delivers a personalised daily briefing tailored to your selected topics. API keys stay on the Vite dev and preview server. There is no database and no separate backend process to deploy.
+The Daily Digest fetches live headlines from the Currents news API, summarises and ranks them using Google's Gemini API, and delivers a personalised daily briefing tailored to your selected topics. The live app is at [compilednews.vercel.app](https://compilednews.vercel.app). API keys stay on the server. There is no database and no user account.
 
 This project was built in a single afternoon as a live demo for a presentation on effective AI use in software development. Every agent session, architecture decision, bug, and honest moment is documented in [`BUILD_DIARY.md`](./BUILD_DIARY.md).
 
@@ -39,17 +39,19 @@ This project was built in a single afternoon as a live demo for a presentation o
 ## ✨ Features
 
 - **AI curation** — Gemini reads, ranks, and summarises every article with a 0–100 relevance score and a one-sentence explanation of why it matters today
-- **Executive briefing** — a three-sentence summary of the biggest story, written entirely by Gemini
-- **Live headlines** — fetches the 10 most recent articles per topic from Currents, covering the last 7 days, in parallel using `Promise.all`
+- **Executive briefing** — a two-to-three sentence summary of the biggest stories, written by Gemini
+- **Live headlines** — fetches the 10 most recent articles per topic from Currents, covering the last 7 days, in parallel using `Promise.all`. Each headline links out to the publisher
 - **Smart deduplication** — duplicate URLs are removed before any AI call, saving tokens and improving summary quality
-- **10 topics** — Technology, AI, Finance, Science, Health, Space, Climate, Politics, Culture, Design — plus custom topics you add yourself
-- **Saved stories** — bookmark articles in the browser. Bookmarks and custom topics persist in `localStorage`
-- **Deep dives** — ask Gemini to explain a story simply, give the counter-argument, or spell out the impact
-- **Audio briefing** — listen to the summary and top stories through the browser's Web Speech API
+- **10 topics** — Technology, AI, Finance, Science, Health, Space, Climate, Politics, Culture, Design — plus custom topics you add yourself. At least one topic stays selected
+- **Saved stories** — bookmark articles in the browser, then filter the digest to saved stories only. Bookmarks and custom topics persist in `localStorage`
+- **Deep dives** — on each story, ask Gemini to explain it simply, give the counter-argument, or spell out the strategic impact. The answer stays on the card until you close it
+- **Audio briefing** — listen to the summary and the top five stories through the browser's Web Speech API, with pause, resume, and stop
 - **Copy and share** — copy the briefing as Markdown, or share it through the browser share sheet
+- **Refresh** — compile a new briefing for the topics you have selected
 - **Session caching** — the last generated digest is persisted to `sessionStorage` so a page refresh restores your briefing instantly without re-triggering the APIs
+- **Loading and error states** — a status banner covers fetching, summarising, and failures, and an error boundary catches a render crash
 - **Privacy-first** — no database, no user accounts, no tracking. API keys stay on the server
-- **Zero extra infrastructure** — `npm run dev` or `npm run preview` runs the UI and the API routes together
+- **One local process** — `npm run dev` or `npm run preview` runs the UI and the API routes together. Production uses the same handlers as Vercel functions
 
 ---
 
@@ -58,9 +60,10 @@ This project was built in a single afternoon as a live demo for a presentation o
 | Layer | Technology | Notes |
 |---|---|---|
 | Frontend | React 19 + TypeScript | Strict mode, verbatimModuleSyntax enabled |
-| Build tool | Vite | Dev server on localhost:5173. `vite-api-plugin.ts` serves `/api/*` |
+| Build tool | Vite | Dev server on localhost:5173. `vite-api-plugin.ts` serves `/api/*` locally |
+| Hosting | Vercel | Production UI plus the same `/api` routes as serverless functions. Live at [compilednews.vercel.app](https://compilednews.vercel.app) |
 | Styling | Tailwind CSS v4 | `@tailwindcss/vite` plugin — no config file needed |
-| AI | Google Generative AI SDK | Model: `gemini-2.5-flash-lite`, called from the Vite server |
+| AI | Google Generative AI SDK | Model: `gemini-2.5-flash-lite`, called on the server |
 | News data | Currents | Free tier — 250 req/day, production use allowed with attribution |
 | State | Zustand | Global digest, topic, and bookmark state |
 | Testing | Vitest + React Testing Library | Colocated test files |
@@ -84,7 +87,7 @@ This project was built in a single afternoon as a live demo for a presentation o
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/[your-username]/news-digest.git
+git clone https://github.com/JayPatel3009/news-digest.git
 cd news-digest
 npm install
 ```
@@ -139,7 +142,7 @@ npm run build
 npm run preview
 ```
 
-`npm run preview` serves the built app and the same `/api` routes, so keys stay on the server. Uploading the `dist/` folder to a static host by itself will not serve those routes.
+`npm run preview` serves the built app and the same `/api` routes, so keys stay on the server. Uploading the `dist/` folder to a static host by itself will not serve those routes. The production app is deployed on Vercel, which runs the UI and the API functions together.
 
 > See [Known Limitations](#-known-limitations) before deploying.
 
@@ -156,7 +159,7 @@ User selects topics
 NewsAdapter.fetchArticles()     ← one call per topic, in parallel
        │                         ← browser calls GET /api/news
        ▼
-Vite API plugin                 ← Currents search, last 7 days, 10 articles
+Server API                      ← Vite plugin locally, Vercel functions in production
        │
        ▼
 Deduplicate by URL              ← browser-side, before any AI call
@@ -176,13 +179,13 @@ Articles are ordered by **relevance score, highest first**. Currents supplies a 
 
 ### Key architectural decisions
 
-**API keys on the Vite server** — the browser calls `/api/news`, `/api/summarise`, and `/api/deep-dive`. `vite-api-plugin.ts` holds the Currents and Gemini keys and runs with `npm run dev` and `npm run preview`. See [ADR-008](./DECISIONS.md) and [ADR-010](./DECISIONS.md).
+**API keys stay on the server** — the browser calls `/api/news`, `/api/summarise`, and `/api/deep-dive`. Locally, `vite-api-plugin.ts` handles those routes during `npm run dev` and `npm run preview`. In production, Vercel runs the same handlers from `server/routes/` as functions. See [ADR-008](./DECISIONS.md) and [ADR-010](./DECISIONS.md).
 
 **Domain types first** — `src/domain/index.ts` was the first file written. All adapters, hooks, and components import from it. TypeScript enforces correctness across every layer — four agent mistakes were caught at compile time rather than runtime because of this.
 
 **Deduplication before Gemini** — multiple topics can return the same article. Filtering duplicates by URL in `useDigest.ts` before the Gemini call saves tokens, improves summary coherence, and keeps costs down.
 
-**JSON fence stripping** — Gemini sometimes wraps JSON responses in backtick code fences. `GeminiAdapter` strips these before calling `JSON.parse`. This was a real bug discovered during the build — see [BUILD_DIARY.md](./BUILD_DIARY.md) for the full entry.
+**JSON fence stripping** — Gemini sometimes wraps JSON responses in backtick code fences. The server handler in `src/server/digestApi.ts` strips these before parsing. This was a real bug discovered during the build — see [BUILD_DIARY.md](./BUILD_DIARY.md) for the full entry.
 
 ---
 
@@ -200,7 +203,10 @@ news-digest/
 ├── .env.example            # Environment variable template
 ├── .env.local              # Your real keys — never committed
 ├── vite.config.ts          # Vite config (no test config — see vitest.config.ts)
-├── vite-api-plugin.ts      # Server routes for Currents, Gemini summary, and deep dive
+├── vite-api-plugin.ts      # Local server routes for Currents, Gemini summary, and deep dive
+├── vercel.json             # Vite build settings for the Vercel project
+├── scripts/bundle-api.mjs  # Bundles server/routes into api/*.js during npm run build
+├── server/routes/          # Vercel function sources for /api/news, /api/summarise, /api/deep-dive
 ├── vitest.config.ts        # Vitest config (separate from Vite in this setup)
 ├── tsconfig.json
 │
@@ -230,6 +236,10 @@ news-digest/
     │   ├── ArticleCard/            # Title link, source, time, AI reason, bookmark, deep dive
     │   ├── StatusBanner/           # Loading and error message display
     │   └── ScoreBar/               # Animated relevance score bar (0–100)
+    │
+    ├── server/
+    │   ├── digestApi.ts            # Shared Currents and Gemini handlers
+    │   └── functionHttp.ts         # Request helpers for the Vercel functions
     │
     ├── utils/
     │   ├── hashUrl.ts              # Generates stable Article.id from URL
@@ -281,10 +291,10 @@ Each session was followed by a commit tagged `[gemini-cli]`. The full prompt use
 
 ## ⚠️ Known Limitations
 
-### The API server is the Vite process
-`CURRENTS_API_KEY` (or `VITE_CURRENTS_API_KEY`) and `GEMINI_API_KEY` are read by `vite-api-plugin.ts`. They are not bundled into client JavaScript when you use `npm run dev` or `npm run preview`, as long as client code does not read the `VITE_` name.
+### The API runs on the server, not in the browser
+`CURRENTS_API_KEY` (or `VITE_CURRENTS_API_KEY`) and `GEMINI_API_KEY` are read by the server. They are not bundled into client JavaScript when you use `npm run dev` or `npm run preview`, as long as client code does not read the `VITE_` name. On Vercel, set `CURRENTS_API_KEY` and `GEMINI_API_KEY` as project environment variables. Do not set the `VITE_` names there, or Vite can inline them into the client bundle.
 
-A static host that only serves `dist/` has no `/api` routes. Run `npm run preview`, or host the app somewhere that executes the same Vite middleware.
+A static host that only serves `dist/` has no `/api` routes. Use `npm run preview`, or deploy to Vercel so the functions in `server/routes/` run with the UI. The live deployment is [compilednews.vercel.app](https://compilednews.vercel.app).
 
 ### Currents free tier
 The free plan allows 250 requests per day, 20 results per request, and a 7-day search window. This app asks for 10 English articles per topic inside that window. Exceeding the daily cap returns HTTP 429.
